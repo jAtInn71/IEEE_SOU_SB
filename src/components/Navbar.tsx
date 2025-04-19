@@ -13,6 +13,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { useTheme } from "@/lib/theme-provider";
+import Admin from "./pages/Admin";
 
 const NAV_ITEMS: NavItem[] = [
   {
@@ -52,6 +53,10 @@ const NAV_ITEMS: NavItem[] = [
     title: "Contact Us",
     href: "/contact",
   },
+  {
+    title:"AdminPanel",
+    href:"/Admin"
+  }
 ];
 
 export default function Navbar() {
