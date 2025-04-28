@@ -6,6 +6,15 @@ import { Input } from "@/components/ui/input";
 import { db } from "@/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
+// Define position hierarchy
+const positionOrder = [
+  "Chairperson",
+  "Vice-Chairperson",
+  "Secretary",
+  "Treasurer",
+  "Webmaster",
+];
+
 const SOCIETY_TITLES = {
   SB: "Student Branch",
   WIE: "Women in Engineering",
@@ -53,6 +62,13 @@ export default function TeamExecutive() {
         member.position.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+  // Function to sort members based on the position order
+  const sortMembersByPosition = (members: any[]) => {
+    return members.sort((a, b) => {
+      return positionOrder.indexOf(a.position) - positionOrder.indexOf(b.position);
+    });
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -82,11 +98,14 @@ export default function TeamExecutive() {
             const members = filterMembers(executiveMembers[societyKey] || []);
             if (members.length === 0) return null;
 
+            // Sort members by position
+            const sortedMembers = sortMembersByPosition(members);
+
             return (
               <div key={societyKey} className="mb-16">
                 <h2 className="text-2xl font-semibold mb-6 text-primary">{title}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {members.map((member) => (
+                  {sortedMembers.map((member) => (
                     <div key={member.id} className="glass rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
                       <div className="p-6">
                         <div className="flex items-start mb-4">
