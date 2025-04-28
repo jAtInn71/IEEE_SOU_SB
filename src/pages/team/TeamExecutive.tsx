@@ -3,46 +3,111 @@ import { Search, Linkedin } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Input } from "@/components/ui/input";
-import { db } from "@/firebase"; // Import your Firebase configuration
+import { db } from "@/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
-const EXECUTIVE_MEMBERS = [];
+const SOCIETY_TITLES = {
+  SB: "Student Branch",
+  WIE: "Women in Engineering",
+  CS: "Computer Society",
+  SPS: "Signal Processing Society",
+  SIGHT: "Special Interest Group on Humanitarian Technology",
+};
+
+const POSITION_HIERARCHY = [
+  "Chairperson",
+  "Vice-Chairperson",
+  "Secretary",
+  "Treasurer",
+  "Webmaster",
+];
+
+const HOVER_COLORS = {
+  SB: "hover:bg-blue-100 dark:hover:bg-blue-800",
+  WIE: "hover:bg-pink-100 dark:hover:bg-pink-800",
+  CS: "hover:bg-green-100 dark:hover:bg-green-800",
+  SPS: "hover:bg-purple-100 dark:hover:bg-purple-800",
+  SIGHT: "hover:bg-yellow-100 dark:hover:bg-yellow-800",
+};
 
 export default function TeamExecutive() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [executiveMembers, setExecutiveMembers] = useState(EXECUTIVE_MEMBERS);
+  const [executiveMembers, setExecutiveMembers] = useState<Record<string, any[]>>({});
 
-  // Fetch executive members from Firestore
   useEffect(() => {
     async function fetchExecutiveMembers() {
       const membersRef = collection(db, "members");
       const q = query(membersRef, where("type", "==", "executive"));
       const querySnapshot = await getDocs(q);
-      const members = querySnapshot.docs.map((doc) => doc.data());
-      setExecutiveMembers(members);
+
+      const grouped: Record<string, any[]> = {
+        SB: [],
+        WIE: [],
+        CS: [],
+        SPS: [],
+        SIGHT: [],
+      };
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const societyType = data.society;
+
+        // Standardize position name
+        let standardizedPosition = data.position;
+        if (standardizedPosition.toLowerCase() === "vice chairperson") {
+          standardizedPosition = "Vice-Chairperson";
+        }
+
+        if (grouped[societyType]) {
+          grouped[societyType].push({ ...data, position: standardizedPosition, id: doc.id });
+        }
+      });
+
+      setExecutiveMembers(grouped);
     }
 
     fetchExecutiveMembers();
   }, []);
 
-  const filteredSocieties = executiveMembers.filter((member) =>
-    member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.position.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filterMembers = (members: any[]) =>
+    members.filter(
+      (member) =>
+        member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.position.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+  const sortMembersByPosition = (members: any[]) => {
+    return members.sort((a, b) => {
+      const positionOrder: Record<string, number> = {
+        Chairperson: 1,
+        "Vice-Chairperson": 2,
+        Secretary: 3,
+        Treasurer: 4,
+        Webmaster: 5,
+      };
+
+      const aPosIndex = positionOrder[a.position] ?? 999;
+      const bPosIndex = positionOrder[b.position] ?? 999;
+
+      return aPosIndex - bPosIndex;
+    });
+  };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-white dark:bg-black">
       <Navbar />
       <main className="flex-grow pt-24 pb-16 animate-fade-in">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Executive Team</h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-black dark:text-white">
+              Executive Team
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto dark:text-muted-foreground-dark">
               Meet the executive members of each IEEE society.
             </p>
           </div>
 
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-12">
             <div className="relative w-full max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
@@ -55,36 +120,64 @@ export default function TeamExecutive() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredSocieties.map((member) => (
-              <div key={member.id} className="glass rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
-                <div className="p-6">
-                  <div className="flex items-start mb-4">
-                    <img
-                      src={member.image}
-                      alt={member.name}
-                      className="w-16 h-16 rounded-full object-cover mr-4"
-                    />
-                    <div>
-                      <div className="flex items-center">
-                        <h3 className="font-bold text-lg">{member.name}</h3>
-                        <a
-                          href={member.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ml-2 text-primary hover:text-primary/80"
-                        >
-                          <Linkedin className="h-4 w-4" />
-                        </a>
+          {Object.entries(SOCIETY_TITLES).map(([societyKey, title]) => {
+            const members = filterMembers(executiveMembers[societyKey] || []);
+            if (members.length === 0) return null;
+
+            const sortedMembers = sortMembersByPosition(members);
+
+            return (
+              <div key={societyKey} className="mb-16">
+                <div className="text-2xl font-semibold mb-6 text-primary dark:text-primary-dark">
+                  {title}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {sortedMembers.map((member) => (
+                    <div
+                      key={member.id}
+                      className={`rounded-lg overflow-hidden shadow-sm transition-all duration-300
+                        bg-white dark:bg-gray-900
+                        ${HOVER_COLORS[societyKey]} 
+                        hover:shadow-md dark:hover:shadow-lg`}
+                    >
+                      <div className="p-6">
+                        <div className="flex items-start mb-4">
+                          <div className="w-16 h-16 min-w-16 rounded-full overflow-hidden mr-4">
+                            <img
+                              src={member.image}
+                              alt={member.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div>
+                            <div className="flex items-center">
+                              <h3 className="font-bold text-lg text-black dark:text-white">
+                                {member.name}
+                              </h3>
+                              <a
+                                href={member.linkedin}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="ml-2 text-primary hover:text-primary/80 dark:text-primary-dark dark:hover:text-primary-dark/80"
+                              >
+                                <Linkedin className="h-4 w-4" />
+                              </a>
+                            </div>
+                            <p className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
+                              {member.position}
+                            </p>
+                            <p className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
+                              {member.education}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground">{member.position}</p>
-                      <p className="text-sm text-muted-foreground">{member.education}</p>
                     </div>
-                  </div>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </main>
       <Footer />
