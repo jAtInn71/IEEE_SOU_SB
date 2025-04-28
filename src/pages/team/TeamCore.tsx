@@ -28,14 +28,14 @@ export default function TeamCore() {
 
       // Initialize the groups with empty arrays
       const grouped: Record<string, any[]> = {};
-      COMMITTEE_TITLES.forEach(committee => {
+      COMMITTEE_TITLES.forEach((committee) => {
         grouped[committee] = [];
       });
 
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         const committee = data.committee; // Exactly as stored in Firestore
-        
+
         // If this committee exists in our predefined list, add the member
         if (COMMITTEE_TITLES.includes(committee)) {
           grouped[committee].push({ ...data, id: doc.id });
@@ -68,6 +68,7 @@ export default function TeamCore() {
             </p>
           </div>
 
+          {/* Search Input */}
           <div className="flex justify-center mb-12">
             <div className="relative w-full max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -81,6 +82,7 @@ export default function TeamCore() {
             </div>
           </div>
 
+          {/* Display committees */}
           {COMMITTEE_TITLES.map((committee) => {
             const members = filterMembers(coreMembers[committee] || []);
             if (members.length === 0) return null;
@@ -92,7 +94,7 @@ export default function TeamCore() {
                   {members.map((member) => (
                     <div
                       key={member.id}
-                      className="glass rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
+                      className="glass rounded-lg overflow-hidden shadow-sm hover:shadow-md hover:bg-blue-100 dark:hover:bg-blue-800 transition-all duration-200"
                     >
                       <div className="p-6">
                         <div className="flex items-start mb-4">
@@ -104,7 +106,8 @@ export default function TeamCore() {
                             />
                           </div>
                           <div>
-                            <div className="flex items-center">
+                            {/* Name and LinkedIn */}
+                            <div className="flex items-center mb-1">
                               <h3 className="font-bold text-lg">{member.name}</h3>
                               {member.linkedin && (
                                 <a
@@ -117,10 +120,11 @@ export default function TeamCore() {
                                 </a>
                               )}
                             </div>
+
+                            {/* Position only */}
                             <p className="text-sm text-muted-foreground">{member.position}</p>
-                            {member.designation && (
-                              <p className="text-sm text-muted-foreground">{member.designation}</p>
-                            )}
+
+                            {/* Education */}
                             {member.education && (
                               <p className="text-sm text-muted-foreground">{member.education}</p>
                             )}
