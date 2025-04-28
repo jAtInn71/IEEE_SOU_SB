@@ -1,9 +1,7 @@
-// Imports remain the same
 import React, { useState, useEffect } from "react";
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import ImageUrlInput from "./ImageUrlInput";
-import { Route } from "react-router-dom";
 
 interface MemberModalProps {
   isOpen: boolean;
@@ -112,6 +110,9 @@ const MemberModal: React.FC<MemberModalProps> = ({ isOpen, onClose, member, setS
 
   if (!isOpen) return null;
 
+  const executiveRoles = ["Chairperson", "Vice-Chairperson", "Secretary", "Treasurer", "Webmaster"];
+  const coreRoles = ["Chairperson", "Vice-Chairperson", "Interim Chairperson", "Interim Vice-Chairperson"];
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-screen overflow-y-auto">
@@ -159,7 +160,7 @@ const MemberModal: React.FC<MemberModalProps> = ({ isOpen, onClose, member, setS
             {memberType === "executive" && (
               <>
                 <Dropdown label="Society/Chapter/Group" value={memberSociety} onChange={setMemberSociety} options={["SB", "WIE", "SIGHT", "SPS", "CS"]} />
-                <Dropdown label="Position" value={memberExecutivePosition} onChange={setMemberExecutivePosition} options={["Chairperson", "Vice-Chairperson", "Treasurer", "Secratory", "Webmaster"]} />
+                <Dropdown label="Position" value={memberExecutivePosition} onChange={setMemberExecutivePosition} options={executiveRoles} />
               </>
             )}
 
@@ -167,7 +168,7 @@ const MemberModal: React.FC<MemberModalProps> = ({ isOpen, onClose, member, setS
             {memberType === "core" && (
               <>
                 <Dropdown label="Committee" value={memberCommittee} onChange={setMemberCommittee} options={["Management Committee", "Curation Committee", "Content Committee", "Creative Committee", "Outreach Committee", "Technical Committee"]} />
-                <Dropdown label="Position" value={memberCorePosition} onChange={setMemberCorePosition} options={["Chairperson", "Vice-Chairperson", "Interim Chairperson", "Interim Vice-Chairperson"]} />
+                <Dropdown label="Position" value={memberCorePosition} onChange={setMemberCorePosition} options={coreRoles} />
               </>
             )}
 
