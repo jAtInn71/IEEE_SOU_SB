@@ -52,7 +52,7 @@ export default function TeamExecutive() {
         const data = doc.data();
         const societyType = data.society;
 
-        // Standardize position name
+        // Standardize position
         let standardizedPosition = data.position;
         if (standardizedPosition.toLowerCase() === "vice chairperson") {
           standardizedPosition = "Vice-Chairperson";
@@ -94,9 +94,9 @@ export default function TeamExecutive() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white dark:bg-black">
+    <div className="flex flex-col min-h-screen bg-white dark:bg-[#0F172A]">
       <Navbar />
-      <main className="flex-grow pt-24 pb-16 animate-fade-in">
+      <main className="flex-grow pt-24 pb-16 animate-fade-in bg-white dark:bg-[#0F172A]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-black dark:text-white">
@@ -154,14 +154,16 @@ export default function TeamExecutive() {
                               <h3 className="font-bold text-lg text-black dark:text-white">
                                 {member.name}
                               </h3>
-                              <a
-                                href={member.linkedin}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="ml-2 text-primary hover:text-primary/80 dark:text-primary-dark dark:hover:text-primary-dark/80"
-                              >
-                                <Linkedin className="h-4 w-4" />
-                              </a>
+                              {member.linkedin && (
+                                <a
+                                  href={member.linkedin}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="ml-2 text-primary hover:text-primary/80 dark:text-primary-dark dark:hover:text-primary-dark/80"
+                                >
+                                  <Linkedin className="h-4 w-4" />
+                                </a>
+                              )}
                             </div>
                             <p className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
                               {member.position}
