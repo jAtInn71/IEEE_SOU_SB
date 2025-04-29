@@ -9,8 +9,8 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 const SOCIETY_TITLES = {
   SB: "Student Branch",
   WIE: "Women in Engineering",
-  CS: "Computer Society",
   SPS: "Signal Processing Society",
+  CS: "Computer Society",
   SIGHT: "Special Interest Group on Humanitarian Technology",
 };
 
@@ -23,11 +23,11 @@ const POSITION_HIERARCHY = [
 ];
 
 const HOVER_COLORS = {
-  SB: "hover:bg-blue-100 dark:hover:bg-blue-800",
-  WIE: "hover:bg-pink-100 dark:hover:bg-pink-800",
-  CS: "hover:bg-green-100 dark:hover:bg-green-800",
-  SPS: "hover:bg-purple-100 dark:hover:bg-purple-800",
-  SIGHT: "hover:bg-yellow-100 dark:hover:bg-yellow-800",
+  SB: "hover:bg-blue-50 dark:hover:bg-blue-800",
+  WIE: "hover:bg-purple-50 dark:hover:bg-purple-800",
+  CS: "hover:bg-yellow-50 dark:hover:bg-yellow-800",
+  SPS: "hover:bg-green-50 dark:hover:bg-green-800",
+  SIGHT: "hover:bg-pink-50 dark:hover:bg-pink-800",
 };
 
 export default function TeamExecutive() {
@@ -43,8 +43,8 @@ export default function TeamExecutive() {
       const grouped: Record<string, any[]> = {
         SB: [],
         WIE: [],
-        CS: [],
         SPS: [],
+        CS: [],
         SIGHT: [],
       };
 
@@ -52,7 +52,6 @@ export default function TeamExecutive() {
         const data = doc.data();
         const societyType = data.society;
 
-        // Standardize position
         let standardizedPosition = data.position;
         if (standardizedPosition.toLowerCase() === "vice chairperson") {
           standardizedPosition = "Vice-Chairperson";
