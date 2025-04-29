@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AwardModal from "../Admin/AwardModal";
 import AwardPreviewList from "../Admin/AwardPreviewList";
 import EventModal from "../Admin/EventModal";
 import EventPreviewList from "../Admin/EventPreviewList";
 import MemberModal from "../Admin/MemberModal";
 import MemberPreviewList from "../Admin/MemberPreviewList";
+import { db } from "../firebase"; // your firebase config
+import { doc, deleteDoc } from "firebase/firestore";
 
 const Admin = () => {
   const [showEventModal, setShowEventModal] = useState(false);
@@ -17,7 +19,7 @@ const Admin = () => {
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
 
-  // Edit Handlers
+  // ✅ Edit Handlers
   const handleEditAward = (award: any) => {
     setSelectedAward(award);
     setShowAwardModal(true);
@@ -28,20 +30,50 @@ const Admin = () => {
     setShowMemberModal(true);
   };
 
-  // Delete Handlers (you can implement real logic here)
-  const handleDeleteAward = (id: string) => {
-    console.log("Delete award with id:", id);
+  // ✅ Delete Handlers
+  const handleDeleteAward = async (id: string) => {
+    if (!navigator.onLine) {
+      setErrorMessage("No internet connection.");
+      return;
+    }
+    try {
+      await deleteDoc(doc(db, "awards", id));
+      setSuccessMessage("Award deleted successfully.");
+    } catch (err: any) {
+      console.error("Delete error:", err);
+      setErrorMessage(`Error deleting award: ${err.message}`);
+    }
   };
 
-  const handleDeleteMember = (id: string) => {
-    console.log("Delete member with id:", id);
+  const handleDeleteMember = async (id: string) => {
+    if (!navigator.onLine) {
+      setErrorMessage("No internet connection.");
+      return;
+    }
+    try {
+      await deleteDoc(doc(db, "members", id));
+      setSuccessMessage("Member deleted successfully.");
+    } catch (err: any) {
+      console.error("Delete error:", err);
+      setErrorMessage(`Error deleting member: ${err.message}`);
+    }
   };
+
+  useEffect(() => {
+    if (successMessage || errorMessage) {
+      const timeout = setTimeout(() => {
+        setSuccessMessage("");
+        setErrorMessage("");
+      }, 4000);
+      return () => clearTimeout(timeout);
+    }
+  }, [successMessage, errorMessage]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <h1 className="text-3xl font-bold mb-6 text-center">Admin Panel</h1>
 
-      {/* Action Buttons */}
+      {/* Buttons */}
       <div className="flex flex-wrap gap-4 justify-center mb-10">
         <button
           onClick={() => setShowEventModal(true)}
@@ -50,13 +82,19 @@ const Admin = () => {
           Add Event
         </button>
         <button
-          onClick={() => setShowAwardModal(true)}
+          onClick={() => {
+            setSelectedAward(null);
+            setShowAwardModal(true);
+          }}
           className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
           Add Award
         </button>
         <button
-          onClick={() => setShowMemberModal(true)}
+          onClick={() => {
+            setSelectedMember(null);
+            setShowMemberModal(true);
+          }}
           className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
           Add Member
@@ -100,7 +138,7 @@ const Admin = () => {
         />
       )}
 
-      {/* Success & Error Messages */}
+      {/* Alerts */}
       {successMessage && (
         <div className="mt-4 text-green-600 text-center">{successMessage}</div>
       )}
