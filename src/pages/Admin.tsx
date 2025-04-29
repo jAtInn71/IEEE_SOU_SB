@@ -50,13 +50,19 @@ const Admin = () => {
           Add Event
         </button>
         <button
-          onClick={() => setShowAwardModal(true)}
+          onClick={() => {
+            setSelectedAward(null); // ✅ Reset award selection before opening modal
+            setShowAwardModal(true);
+          }}
           className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
           Add Award
         </button>
         <button
-          onClick={() => setShowMemberModal(true)}
+          onClick={() => {
+            setSelectedMember(null); // ✅ Reset member selection before opening modal
+            setShowMemberModal(true);
+          }}
           className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
           Add Member
