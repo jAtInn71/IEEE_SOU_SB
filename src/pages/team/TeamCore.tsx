@@ -16,6 +16,14 @@ const COMMITTEE_TITLES = [
   "Management Committee",
 ];
 
+// Define position priority
+const POSITION_PRIORITY: Record<string, number> = {
+  "chairperson": 1,
+  "vice chairperson": 2,
+  "interim chairperson": 3,
+  "interim vice chairperson": 4,
+};
+
 export default function TeamCore() {
   const [searchTerm, setSearchTerm] = useState("");
   const [coreMembers, setCoreMembers] = useState<Record<string, any[]>>({});
@@ -26,7 +34,6 @@ export default function TeamCore() {
       const q = query(membersRef, where("type", "==", "core"));
       const querySnapshot = await getDocs(q);
 
-      // Initialize the groups with empty arrays
       const grouped: Record<string, any[]> = {};
       COMMITTEE_TITLES.forEach((committee) => {
         grouped[committee] = [];
@@ -34,9 +41,8 @@ export default function TeamCore() {
 
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        const committee = data.committee; // Exactly as stored in Firestore
+        const committee = data.committee;
 
-        // If this committee exists in our predefined list, add the member
         if (COMMITTEE_TITLES.includes(committee)) {
           grouped[committee].push({ ...data, id: doc.id });
         }
@@ -48,12 +54,26 @@ export default function TeamCore() {
     fetchCoreMembers();
   }, []);
 
+  const normalize = (pos: string) =>
+    pos?.toLowerCase().replace(/-/g, " ").trim();
+
+  const sortMembers = (members: any[]) => {
+    return [...members].sort((a, b) => {
+      const posA = POSITION_PRIORITY[normalize(a.position)] || 99;
+      const posB = POSITION_PRIORITY[normalize(b.position)] || 99;
+      return posA - posB;
+    });
+  };
+
   const filterMembers = (members: any[]) =>
-    members.filter(
-      (member) =>
-        member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (member.designation && member.designation.toLowerCase().includes(searchTerm.toLowerCase()))
+    sortMembers(
+      members.filter(
+        (member) =>
+          member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          member.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (member.designation &&
+            member.designation.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
     );
 
   return (
@@ -62,7 +82,9 @@ export default function TeamCore() {
       <main className="flex-grow pt-24 pb-16 animate-fade-in">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Core Committee</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              Core Committee
+            </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Meet the core team members of each IEEE committee.
             </p>
@@ -89,7 +111,9 @@ export default function TeamCore() {
 
             return (
               <div key={committee} className="mb-16">
-                <h2 className="text-2xl font-semibold mb-6 text-primary">{committee}</h2>
+                <h2 className="text-2xl font-semibold mb-6 text-primary">
+                  {committee}
+                </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {members.map((member) => (
                     <div
@@ -121,12 +145,14 @@ export default function TeamCore() {
                               )}
                             </div>
 
-                            {/* Position only */}
+                            {/* Position */}
                             <p className="text-sm text-muted-foreground">{member.position}</p>
 
                             {/* Education */}
                             {member.education && (
-                              <p className="text-sm text-muted-foreground">{member.education}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {member.education}
+                              </p>
                             )}
                           </div>
                         </div>
